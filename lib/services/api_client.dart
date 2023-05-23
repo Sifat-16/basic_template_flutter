@@ -1,10 +1,11 @@
+import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
 import 'package:dio_cache_interceptor_hive_store/dio_cache_interceptor_hive_store.dart';
 
 import 'app_data_box.dart';
 import 'app_path_provider.dart';
-
+import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 
 
 class ApiClient {
@@ -26,6 +27,7 @@ class ApiClient {
   late String appPath;
 
   final Dio client = Dio();
+  final cookieJar = CookieJar();
 
   final cacheOptions = CacheOptions(
     // A default store is required for interceptor.
@@ -58,12 +60,14 @@ class ApiClient {
   /// However, for authenticated users, it also depends on the auth token box.
   ApiClient() {
     // accessToken = useAppDataBox().get('accessToken');
+
     client
       ..options.baseUrl = rootUrl
       ..options.headers = commonHeaders
       ..interceptors.add(TokenInterceptor())
       ..interceptors.add(LogInterceptor())
       ..interceptors.add(LaravelRequestInterceptor())
+      ..interceptors.add(CookieManager(cookieJar))
       ..interceptors.add(DioCacheInterceptor(options: cacheOptions));
   }
 
